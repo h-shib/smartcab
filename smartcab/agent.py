@@ -11,9 +11,9 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
-        self.alpha = 0.6
-        self.gamma = 0.9
-        self.Q_values = {} # {state: {action: value}}
+        self.alpha = 0.6   # learning rate
+        self.gamma = 0.9   # discount factor
+        self.Q_values = {} # key: state, value: {action: value}
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
@@ -39,8 +39,11 @@ class LearningAgent(Agent):
         deadline = self.env.get_deadline(self)
 
         # TODO: Update state
-        self.state = (self.next_waypoint, inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'])
-        
+        #self.state = (self.next_waypoint, inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'])
+        bool_for_left = (inputs['light'] == 'green') and (inputs['oncoming'] == None or inputs['oncoming'] == 'left')
+        bool_for_right = (inputs['light'] == 'green') or (inputs['left'] != 'forward')
+        self.state = (self.next_waypoint, inputs['light'], bool_for_left, bool_for_right)
+
         # TODO: Select action according to your policy
         # action = random.choice(self.env.valid_actions)
         action = self.get_action(self.state)
@@ -50,12 +53,14 @@ class LearningAgent(Agent):
 
         # TODO: Learn policy based on state, action, reward
         next_waypoint = self.planner.next_waypoint()
-        next_inputs = self.env.sense(self)
-        next_state = (next_waypoint, next_inputs['light'], next_inputs['oncoming'], next_inputs['left'], next_inputs['right'])
+        next_inputs = self.env.sense(self)    
+
+        next_bool_for_left = (inputs['light'] == 'green') and (inputs['oncoming'] == None or inputs['oncoming'] == 'left')
+        next_bool_for_right = (inputs['light'] == 'green') or (inputs['left'] != 'forward')
+        next_state = (next_waypoint, next_inputs['light'], next_bool_for_left, next_bool_for_right)
         self.learn_policy(self.state, action, reward, next_state)
 
         print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
-        print self.next_waypoint
 
 def run():
     """Run the agent for a finite number of trials."""
@@ -63,11 +68,11 @@ def run():
     # Set up environment and agent
     e = Environment()  # create environment (also adds some dummy traffic)
     a = e.create_agent(LearningAgent)  # create agent
-    e.set_primary_agent(a, enforce_deadline=False)  # specify agent to track
+    e.set_primary_agent(a, enforce_deadline=True)  # specify agent to track
     # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
 
     # Now simulate it
-    sim = Simulator(e, update_delay=0.1, display=False)  # create simulator (uses pygame when display=True, if available)
+    sim = Simulator(e, update_delay=0.0001, display=False)  # create simulator (uses pygame when display=True, if available)
     # NOTE: To speed up simulation, reduce update_delay and/or set display=False
 
     sim.run(n_trials=100)  # run for a specified number of trials
