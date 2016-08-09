@@ -39,6 +39,8 @@ class Environment(object):
         self.t = 0
         self.agent_states = OrderedDict()
         self.status_text = ""
+        self.success_count = 0
+        self.reward_per_turn = []
 
         # Road network
         self.grid_size = (8, 6)  # (cols, rows)
@@ -210,9 +212,15 @@ class Environment(object):
                 if state['deadline'] >= 0:
                     reward += 10  # bonus
                 self.done = True
+                # calculate and append reward per turn
+                self.reward_per_turn.append(agent.rewards/agent.trial_count)
+                self.success_count += 1
                 print ""
+                print "total reward:", agent.rewards
+                print "total trial:", agent.trial_count
+                print "average:", agent.rewards/agent.trial_count
+                print "success count:", self.success_count
                 print "Environment.act(): Primary agent has reached destination!"  # [debug]
-                print ""
             self.status_text = "state: {}\naction: {}\nreward: {}".format(agent.get_state(), action, reward)
             #print "Environment.act() [POST]: location: {}, heading: {}, action: {}, reward: {}".format(location, heading, action, reward)  # [debug]
 
