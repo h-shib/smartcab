@@ -11,19 +11,23 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
-        self.alpha = 0.6   # learning rate
+        self.alpha = 0.8   # learning rate
         self.gamma = 0.9   # discount factor
         self.Q_values = {} # key: state, value: {action: value}
+        self.trial_count = 0
+        self.rewards = 0
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
         # TODO: Prepare for a new trip; reset any variables here, if required
 
-    def get_action(self, state):
+    def get_action(self, state, epsilon):
         if state not in self.Q_values:
             self.Q_values[state] = {None: 10, 'forward': 10, 'left': 10, 'right': 10}
-            return random.choice(self.Q_values[state].keys())
-        return max(self.Q_values[state].items(), key=lambda x:x[1])[0]
+        #if random.random() < epsilon:
+            return random.choice(self.env.valid_actions)
+        else:
+            return max(self.Q_values[state].items(), key=lambda x:x[1])[0]
 
     def get_max_Q_value(self, state):
         return max(self.Q_values[state].values()) if state in self.Q_values else 10
@@ -37,6 +41,7 @@ class LearningAgent(Agent):
         self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
         inputs = self.env.sense(self)
         deadline = self.env.get_deadline(self)
+        self.trial_count += 1
 
         # TODO: Update state
         #self.state = (self.next_waypoint, inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'])
@@ -45,22 +50,23 @@ class LearningAgent(Agent):
         self.state = (self.next_waypoint, inputs['light'], bool_for_left, bool_for_right)
 
         # TODO: Select action according to your policy
-        # action = random.choice(self.env.valid_actions)
-        action = self.get_action(self.state)
+        epsilon = 1 / float(self.trial_count + 1)
+        action = self.get_action(self.state, epsilon)
 
         # Execute action and get reward
         reward = self.env.act(self, action)
+        self.rewards += reward
 
         # TODO: Learn policy based on state, action, reward
         next_waypoint = self.planner.next_waypoint()
-        next_inputs = self.env.sense(self)    
+        next_inputs = self.env.sense(self)
 
         next_bool_for_left = (inputs['light'] == 'green') and (inputs['oncoming'] == None or inputs['oncoming'] == 'left')
         next_bool_for_right = (inputs['light'] == 'green') or (inputs['left'] != 'forward')
         next_state = (next_waypoint, next_inputs['light'], next_bool_for_left, next_bool_for_right)
         self.learn_policy(self.state, action, reward, next_state)
 
-        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
+        #print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
 
 def run():
     """Run the agent for a finite number of trials."""
