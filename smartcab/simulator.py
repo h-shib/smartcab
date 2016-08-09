@@ -2,6 +2,7 @@ import os
 import time
 import random
 import importlib
+import matplotlib.pyplot as plt
 
 class Simulator(object):
     """Simulates agents in a dynamic smartcab environment.
@@ -104,6 +105,11 @@ class Simulator(object):
 
             if self.quit:
                 break
+        # render reward per turn
+        plt.plot(self.env.reward_per_turn)
+        plt.ylabel('rewards per turn')
+        plt.xlabel('trial count')
+        plt.show()
 
     def render(self):
         # Clear screen
