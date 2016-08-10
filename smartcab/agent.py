@@ -13,6 +13,7 @@ class LearningAgent(Agent):
         # TODO: Initialize any additional variables here
         self.alpha = 0.8   # learning rate
         self.gamma = 0.9   # discount factor
+        self.epsilon = 0   # epsilon greedy factor
         self.Q_values = {} # key: state, value: {action: value}
         self.trial_count = 0
         self.rewards = 0
@@ -50,8 +51,8 @@ class LearningAgent(Agent):
         self.state = (self.next_waypoint, inputs['light'], bool_for_left, bool_for_right)
 
         # TODO: Select action according to your policy
-        epsilon = 1 / float(self.trial_count + 1)
-        action = self.get_action(self.state, epsilon)
+        self.epsilon = 1 / float(self.trial_count + 1)
+        action = self.get_action(self.state, self.epsilon)
 
         # Execute action and get reward
         reward = self.env.act(self, action)
