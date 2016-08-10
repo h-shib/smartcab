@@ -13,7 +13,7 @@ class LearningAgent(Agent):
         # TODO: Initialize any additional variables here
         self.alpha = 0.6   # learning rate
         self.gamma = 0.9   # discount factor
-        self.epsilon = 0   # epsilon greedy factor
+        self.epsilon = 1   # epsilon greedy factor
         self.Q_values = {} # key: state, value: {action: value}
         self.trial_count = 0
         self.rewards = 0
@@ -25,7 +25,7 @@ class LearningAgent(Agent):
     def get_action(self, state, epsilon):
         if state not in self.Q_values:
             self.Q_values[state] = {None: 10, 'forward': 10, 'left': 10, 'right': 10}
-        #if random.random() < epsilon:
+        if random.random() < epsilon:
             return random.choice(self.env.valid_actions)
         else:
             return max(self.Q_values[state].items(), key=lambda x:x[1])[0]
