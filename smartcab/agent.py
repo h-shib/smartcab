@@ -34,8 +34,7 @@ class LearningAgent(Agent):
         return max(self.Q_values[state].values()) if state in self.Q_values else 10
 
     def learn_policy(self, state, action, reward, next_state):
-        self.Q_values[state][action] = (1 - self.alpha) * self.get_max_Q_value(state) + self.alpha * (reward + self.gamma * self.get_max_Q_value(next_state))
-
+        self.Q_values[state][action] = (1 - self.alpha) * self.Q_values[state][action] + self.alpha * (reward + self.gamma * self.get_max_Q_value(next_state))
 
     def update(self, t):
         # Gather inputs
