@@ -221,6 +221,7 @@ class Environment(object):
                 print "average:", agent.rewards/agent.trial_count
                 print "success count:", self.success_count
                 print "Environment.act(): Primary agent has reached destination!"  # [debug]
+                print agent.Q_values
             self.status_text = "state: {}\naction: {}\nreward: {}".format(agent.get_state(), action, reward)
             #print "Environment.act() [POST]: location: {}, heading: {}, action: {}, reward: {}".format(location, heading, action, reward)  # [debug]
 
